@@ -20,7 +20,7 @@ global.btc = 'btceste'
 //Daftar terlebih dahulu https://api.botcahx.eu.org
 
 //INI OPTIONAL BOLEH DI ISI BOLEH JUGA ENGGA//
-global.lann = ''
+global.lann = 'oD4wgh58'
 //Daftar https://api.betabotz.eu.org 
 
 global.APIs = {   
