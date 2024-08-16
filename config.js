@@ -1,12 +1,12 @@
 global.owner = ['62857664507351']  
 global.mods = ['62857664507351'] 
 global.prems = ['62857664507351']
-global.nameowner = 'Tio'
+global.nameowner = 'botzz'
 global.numberowner = '62857664507351' 
 global.mail = 'support@tioprm.eu.org' 
 global.gc = 'https://chat.whatsapp.com/CP5mV2D9IO730HpBgmkuyi'
 global.instagram = 'https://instagram.com/prm2.0'
-global.wm = '© Tio'
+global.wm = '© botzz'
 global.wait = '_*Tunggu sedang di proses...*_'
 global.eror = '_*Server Error*_'
 global.stiker_wait = '*⫹⫺ Stiker sedang dibuat...*'
