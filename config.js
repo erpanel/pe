@@ -20,14 +20,14 @@ global.btc = 'botzz'
 //Daftar terlebih dahulu https://api.botcahx.eu.org
 
 //INI OPTIONAL BOLEH DI ISI BOLEH JUGA ENGGA//
-global.lann = 'oD4wgh58'
+global.lann = 'bottz'
 //Daftar https://api.betabotz.eu.org 
 
 global.APIs = {   
   btc: 'https://api.botcahx.eu.org'
 }
 global.APIKeys = { 
-  'https://api.botcahx.eu.org': 'btceste' 
+  'https://api.botcahx.eu.org': 'botzz' 
 }
 
 let fs = require('fs')
