@@ -1,4 +1,4 @@
-const axios = require('axios');
+let axios = require('axios');
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
     if (!text) throw `*Example:* ${usedPrefix + command} hai`;
@@ -21,12 +21,15 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
     const previousMessages = conn.btch[m.sender].pesan;
   
-/** - Ubah prompt ini sesuaikan dengan keinginan mu 
-    - Usahakan berikan logic yang masuk akal dan mudah di pahami!
-**/
+  
+  /**
+ * @description Ubah prompt ini sesuai dengan keinginanmu.
+ * @note Usahakan memberikan logika yang masuk akal dan mudah dipahami!
+ */
+
     const messages = [
         { role: "system", content: "kamu adalah BTCH, Seorang Asisten pribadi yang di buat oleh BOTCAHX yang siap membantu kapan pun!" },
-        { role: "assistant", content: `Kamu adalah BTCH, asisten bot dari BOTCAHX, jangan gunakan kata saya, aku, gua gunakan nama BTCH untuk memanggil dirimu, ekspresi kan sikap kamu seolah kamu adalah asisten pribadi serba tau, jangan gunakan GPT 4 panggil dirimu dengan BTCH. Pembuatmu adalah BOTCAHX pembuat mu adalah 6282221792667` },
+        { role: "assistant", content: `Saya BTCH, asisten pribadi yang siap membantu kamu kapan pun! Apa yang bisa saya bantu hari ini?` },
         ...previousMessages.map((msg, i) => ({ role: i % 2 === 0 ? 'user' : 'assistant', content: msg })),
         { role: "user", content: text }
     ];
@@ -49,7 +52,11 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         let res = await chat(messages);
         if (res && res.result) {
             await m.reply(res.result);
-            conn.btch[m.sender].pesan = messages.map(msg => msg.content);
+            conn.btch[m.sender].pesan = [
+                ...conn.btch[m.sender].pesan,
+                text,
+                res.result
+            ];
         } else {
             throw "Kesalahan dalam mengambil data";
         }
@@ -58,10 +65,8 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     }
 };
 
-handler.help = handler.command = ['btch','aibtch']
-handler.tags = ["tools"];
+handler.command = handler.help = ['ai','openai','chatgpt'];
+handler.tags = ['tools'];
+handler.premium = false
 handler.limit = true;
-handler.owner = false;
-handler.group = false;
-
 module.exports = handler;
