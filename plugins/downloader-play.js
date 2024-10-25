@@ -1,88 +1,69 @@
-let search = require('yt-search');
-let fetch = require('node-fetch');
- 
-let handler = async (m, { conn, text, usedPrefix }) => {
-    if (!text) throw 'Enter Title / Link From YouTube!';
+const yts = require("yt-search");
+const fetch = require('node-fetch');
+
+const handler = async (m, { conn, text }) => {
+    if (!text) throw 'Please enter a YouTube title or link!';
+
     try {
-        const look = await search(text);
-        const convert = look.videos[0];
-        if (!convert) throw 'Video/Audio Tidak Ditemukan';
-        if (convert.seconds >= 3600) {
-            return conn.reply(m.chat, 'Video is longer than 1 hour!', m);
-        } else {
-            let audioUrl;
-            try {
-                const res = await fetch(`https://api.botcahx.eu.org/api/dowloader/yt?url=${convert.url}&apikey=${btc}`);
-                try {
-                    audioUrl = await res.json();
-                } catch (e) {
-                    conn.reply(m.chat, eror, m)
-                }
-                
-            } catch (e) {
-                conn.reply(m.chat, eror, m)
-                return;
-            }
- 
-            let caption = '';
-            caption += `∘ Title : ${convert.title}\n`;
-            caption += `∘ Ext : Search\n`;
-            caption += `∘ ID : ${convert.videoId}\n`;
-            caption += `∘ Duration : ${convert.timestamp}\n`;
-            caption += `∘ Viewers : ${convert.views}\n`;
-            caption += `∘ Upload At : ${convert.ago}\n`;
-            caption += `∘ Author : ${convert.author.name}\n`;
-            caption += `∘ Channel : ${convert.author.url}\n`;
-            caption += `∘ Url : ${convert.url}\n`;
-            caption += `∘ Description : ${convert.description}\n`;
-            caption += `∘ Thumbnail : ${convert.image}`;
- 
-            await conn.relayMessage(m.chat, {
-                extendedTextMessage: {
-                    text: caption,
-                    contextInfo: {
-                        externalAdReply: {
-                            title: convert.title,
-                            mediaType: 1,
-                            previewType: 0,
-                            renderLargerThumbnail: true,
-                            thumbnailUrl: convert.image,
-                            sourceUrl: audioUrl.result.mp3
-                        }
-                    },
-                    mentions: [m.sender]
-                }
-            }, {});
- 
-            await conn.sendMessage(m.chat, {
-                audio: {
-                    url: audioUrl.result.mp3
-                },
-                mimetype: 'audio/mpeg',
-                contextInfo: {
-                    externalAdReply: {
-                        title: convert.title,
-                        body: "",
-                        thumbnailUrl: convert.image,
-                        sourceUrl: audioUrl.result.mp3,
-                        mediaType: 1,
-                        showAdAttribution: true,
-                        renderLargerThumbnail: true
-                    }
-                }
-            }, {
-                quoted: m
-            });
+        const search = await yts(text);
+        if (!search || !search.all || search.all.length === 0) {
+            throw 'No results found for your query!';
         }
+
+        const videoUrl = search.all[0].url;
+
+        const response = await ytdl(videoUrl);
+
+        const mp3Url = response.data.mp3;
+        if (!mp3Url) {
+            throw 'Failed to retrieve the mp3 link!';
+        }
+
+        await conn.sendMessage(m.chat, {
+            audio: { url: mp3Url },
+            mimetype: "audio/mpeg",
+            fileName: "alfixd.mp3",
+            contextInfo: {
+                forwardingScore: 100,
+                isForwarded: false,
+                externalAdReply: {
+                    showAdAttribution: true,
+                    title: search.all[0].title,
+                    sourceUrl: videoUrl,
+                    thumbnailUrl: search.all[0].thumbnail,
+                }
+            }
+        }, { quoted: m });
+
     } catch (e) {
-        conn.reply(m.chat, eror, m)
+        conn.reply(m.chat, `*Error:* ${e.message}`, m);
     }
 };
- 
-handler.command = handler.help = ['play', 'song', 'ds'];
+
+handler.command = ['play', 'ds', 'song'];
 handler.tags = ['downloader'];
 handler.exp = 0;
 handler.limit = true;
 handler.premium = false;
- 
+
 module.exports = handler;
+
+async function ytdl(url) {
+    const response = await fetch('https://shinoa.us.kg/api/download/ytdl', {
+        method: 'POST',
+        headers: {
+            'accept': '*/*',
+            'api_key': 'free',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text: url })
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch audio: HTTP status ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+                     }
+                   
