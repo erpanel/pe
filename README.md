@@ -75,5 +75,5 @@ node index.js --pairing
 ##### All Contributors
 <a href="https://github.com/BOTCAHX"><img src="https://github.com/BOTCAHX.png?size=100" width="100" height="100"></a> | [![Erlan](https://github.com/ERLANRAHMAT.png?size=100)](https://github.com/ERLANRAHMAT) 
 ---|---
-[Tio](https://github.com/BOTCAHX)  | [Erlan](https://github.com/ERLANRAHMAT)
+[gwh](https://github.com/official4jelas)  | [p](https://github.com/official4jelas)
 Recode | Contributor 
