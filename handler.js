@@ -62,7 +62,7 @@ module.exports = {
                     if (!isNumber(user.troopcamp)) user.troopcamp = 0
                     if (!isNumber(user.coin)) user.coin = 0
                     if (!isNumber(user.atm)) user.atm = 0
-                    if (!isNumber(user.limit)) user.limit = 10
+                    if (!isNumber(user.limit)) user.limit = 100
                     if (!isNumber(user.glimit)) user.glimit = 10
                     if (!isNumber(user.tprem)) user.tprem = 0
                     if (!isNumber(user.tigame)) user.tigame = 5
@@ -462,7 +462,7 @@ module.exports = {
                     exp: 0,
                     coin: 0,
                     atm: 0,
-                    limit: 10,
+                    limit: 100,
                     skata: 0,
                     tigame: 999,
                     lastclaim: 0,
@@ -796,8 +796,8 @@ module.exports = {
                 if (!('isBannedTime' in chat)) chat.isBannedTime = false
                 if (!('mute' in chat)) chat.mute = false
                 if (!('listStr' in chat)) chat.listStr = {}
-                if (!('sWelcome' in chat)) chat.sWelcome = '*Selamat datang @user!*\n\n     Di group @subject\n\n╭─────「 *intro* 」\n│\n│─⪼ Nama : \n│─⪼ Umur :\n│─⪼ Askot :\n│─⪼ Gender :\n╰─────────────\n\n> semoga betah'
-                if (!('sBye' in chat)) chat.sBye = 'Al-fatihah untuk @user'
+                if (!('sWelcome' in chat)) chat.sWelcome = 'Selamat datang @user di group @subject utamakan baca desk ya \n@desc'
+                if (!('sBye' in chat)) chat.sBye = 'Selamat tinggal @user 👋'
                 if (!('sPromote' in chat)) chat.sPromote = ''
                 if (!('sDemote' in chat)) chat.sDemote = ''
                 if (!('delete' in chat)) chat.delete = true
@@ -828,14 +828,14 @@ module.exports = {
                 if (!('antibot' in chat)) chat.antibot = false
             } else global.db.data.chats[m.chat] = {
                 isBanned: false,
-                welcome: false,
+                welcome: true,
                 welcometype: 1,
                 detect: false,
                 isBannedTime: false,
                 mute: false,
                 listStr: {},
-                sWelcome: '*Selamat datang @user!*\n\n     Di group @subject\n\n╭─────「 *intro* 」\n│\n│─⪼ Nama : \n│─⪼ Umur :\n│─⪼ Askot :\n│─⪼ Gender :\n╰─────────────\n\n> semoga betah',
-                sBye: 'Al-fatihah untuk @user',
+                sWelcome: 'Selamat datang @user di group @subject utamakan baca desk ya \n@desc',
+                sBye: 'Selamat tinggal @user 👋',
                 sPromote: '',
                 sDemote: '',
                 delete: false, 
