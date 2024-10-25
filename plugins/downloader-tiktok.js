@@ -1,52 +1,75 @@
-let axios = require('axios');
+const ffmpeg = require("fluent-ffmpeg");
 
-let handler = async (m, { conn, text, usedPrefix, command }) => {
-    if (!text) throw `Masukan URL!\n\ncontoh:\n${usedPrefix + command} https://vm.tiktok.com/ZGJAmhSrp/`;    
-    try {
-        if (!text.match(/tiktok/gi) && !text.match(/douyin/gi)) {
-          throw `URL Tidak Ditemukan!`;
-        }
-        m.reply(wait);      
+var handler = async (m, { conn, args, usedPrefix, command }) => {
+  if (!args[0]) {
+    throw `*[❗] Contoh: ${usedPrefix + command} <URL>*`;
+  }
 
-        try {
-            const response = await axios.get(`https://api.botcahx.eu.org/api/dowloader/tiktok?url=${text}&apikey=${btc}`);
-            const res = response.data.result;      
-            var { video, title, title_audio, audio } = res;
-            if (!video[0] || !audio[0]) {
-                throw eror
-            }
-            let capt = `乂 *T I K T O K*\n\n`;
-            capt += `◦ *Title* : ${title}\n`;
-            capt += `◦ *Audio* : ${title_audio}\n`;
-            capt += `\n`;        
-            
-            if (video.length > 1) {
-                for (let v of video) {
-                    await conn.sendFile(m.chat, v, null, capt, m);
-                }
-            } else {
-                await conn.sendFile(m.chat, video[0], null, capt, m);
-            }
-            conn.sendMessage(m.chat, { audio: { url: audio[0] }, mimetype: 'audio/mpeg' }, { quoted: m });
-            return;
-        } catch (e) {
-            throw eror
-        }
-    } catch (e) {
-        throw eror
+  try {
+    await conn.reply(m.chat, "⏳ *Tunggu sebentar kak, sedang dalam proses...*", m);
+
+    const tiktokData = await tiktokdl(args[0]);
+
+    if (!tiktokData) {
+      throw "❌ *Gagal mendownload video!*";
     }
+
+    const videoURL = tiktokData.data.play;
+    const videoURLWatermark = tiktokData.data.wmplay;
+    const images = tiktokData.data.images; 
+    const audioURL = tiktokData.data.music;
+
+    const infonya_gan = `🎵 *Judul:* ${tiktokData.data.title}\n📅 *Upload:* ${tiktokData.data.create_time}\n\n📊 *STATUS:*\n=====================\n👍 *Like:* ${tiktokData.data.digg_count}\n💬 *Komen:* ${tiktokData.data.comment_count}\n🔗 *Share:* ${tiktokData.data.share_count}\n👁️‍🗨️ *Views:* ${tiktokData.data.play_count}\n💾 *Simpan:* ${tiktokData.data.download_count}\n=====================\n\n👤 *Uploader:* ${tiktokData.data.author.nickname || "Tidak ada informasi penulis"}\n(${tiktokData.data.author.unique_id} - https://www.tiktok.com/@${tiktokData.data.author.unique_id})\n🎶 *Sound:* ${tiktokData.data.music}\n`;
+
+    if (images && images.length > 0) {
+      for (let image of images) {
+        await conn.sendFile(m.chat, image, "image.jpg", `📸 *Ini kak gambarnya*\n\n${infonya_gan}`, m);
+      }
+
+      if (audioURL) {
+        await conn.sendFile(m.chat, audioURL, "lagutt.mp3", "🎵 *Ini lagunya* 🎶", m);
+      }
+
+    } else if (videoURL || videoURLWatermark) { 
+      await conn.sendFile(m.chat, videoURL, "tiktok.mp4", `🎥 *Ini kak videonya*\n\n${infonya_gan}`, m);
+      
+      if (videoURLWatermark) {
+        await conn.sendFile(m.chat, videoURLWatermark, "tiktokwm.mp4", `💧 *Ini Versi Watermark*\n\n${infonya_gan}`, m);
+      }
+
+      const audioFileName = "lagutt.mp3";
+      await convertVideoToMp3(videoURL, audioFileName);
+      await conn.sendFile(m.chat, audioFileName, "lagutt.mp3", "🎶 *Ini lagunya* 🎧", m);
+      
+    } else {
+      throw "⚠️ *Tidak ada tautan slide/video yang tersedia.*";
+    }
+
+    conn.reply(m.chat, "✨ *Nikmati Kontennya!*", m);
+
+  } catch (e) {
+    conn.reply(m.chat, `🚨 *Error:* ${e}`, m);
+  }
 };
 
-handler.help = ['tiktok'];
-handler.command = /^(tiktok|tt|tiktokdl|tiktoknowm)$/i;
-handler.tags = ['downloader'];
-handler.limit = true;
-handler.group = false;
-handler.premium = false;
-handler.owner = false;
-handler.admin = false;
-handler.botAdmin = false;
-handler.fail = null;
-handler.private = false;
+async function convertVideoToMp3(videoUrl, outputFileName) {
+  return new Promise((resolve, reject) => {
+    ffmpeg(videoUrl)
+      .toFormat("mp3")
+      .on("end", () => resolve())
+      .on("error", (err) => reject(err))
+      .save(outputFileName);
+  });
+}
+
+handler.help = ["tiktok"].map((v) => v + " <url>");
+handler.tags = ["downloader"];
+handler.command = /^t(t|iktok(d(own(load(er)?)?|l))?|td(own(load(er)?)?|l))$/i;
 
 module.exports = handler;
+
+async function tiktokdl(url) {
+  let tikwm = `https://www.tikwm.com/api/?url=${url}?hd=1`;
+  let response = await (await fetch(tikwm)).json();
+  return response;
+}
