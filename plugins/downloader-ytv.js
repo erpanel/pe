@@ -1,27 +1,52 @@
-let fetch = require('node-fetch');
+const ytdl = require("ytdl-core");
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
-  if (!text) throw `*Example:* ${usedPrefix + command} https://www.youtube.com/watch?v=Z28dtg_QmFw`;
-  try {
-    const response = await fetch(`https://api.botcahx.eu.org/api/dowloader/yt?url=${encodeURIComponent(text)}&apikey=${btc}`);
-    const result = await response.json();
-
-    if (result.status && result.result && result.result.mp4) {
-      await conn.sendMessage(m.chat, { 
-        video: { url: result.result.mp4 }, 
-        mimetype: 'video/mp4' 
-      }, { quoted: m });
-    } else {
-      throw 'Error: Unable to fetch video';
-    }
-  } catch (error) {
-    throw eror
-  }
+	if (!text) return m.reply(`*Example:* .${command} https://www.youtube.com/xxxxxxx`);
+	conn.sendMessage(m.chat, { react: { text: '🕒', key: m.key }});
+	let obj = await ytmp3(text);
+	let title = obj.meta.title;
+	conn.sendFile(m.chat, obj.buffer, '', "", m, 0, {
+		mimetype: "video/mp4",
+		fileName: `${title}.mp4`,
+		asDocument: false,
+	});
 };
 
-handler.help = handler.command = ['ytmp4', 'ytv'];
+handler.help = ['ytmp4'];
 handler.tags = ['downloader'];
-handler.limit = true;
-handler.premium = false;
+handler.command = ['ytmp4', 'ytv'];
 
 module.exports = handler;
+
+async function ytmp3(url) {
+	try {
+		const { videoDetails } = await ytdl.getInfo(url, {
+			lang: "id",
+		});
+		const stream = ytdl(url, {
+			filter: "videoandaudio",
+		});
+		const chunks = [];
+		stream.on("data", (chunk) => {
+			chunks.push(chunk);
+		});
+		await new Promise((resolve, reject) => {
+			stream.on("end", resolve);
+			stream.on("error", reject);
+		});
+		const buffer = Buffer.concat(chunks);
+		return {
+			meta: {
+				title: videoDetails.title,
+				channel: videoDetails.author.name,
+				seconds: videoDetails.lengthSeconds,
+				description: videoDetails.description,
+				image: videoDetails.thumbnails.slice(-1)[0].url,
+			},
+			buffer: buffer,
+			size: buffer.length,
+		};
+	} catch (error) {
+		throw error;
+	}
+}
