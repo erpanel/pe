@@ -1,72 +1,76 @@
-let axios = require('axios');
+const axios = require("axios");
 
-let handler = async (m, { conn, text, usedPrefix, command }) => {
-    if (!text) throw `*Example:* ${usedPrefix + command} hai`;
-    conn.btch = conn.btch ? conn.btch : {};
-    if (!conn.btch[m.sender]) {
-        conn.btch[m.sender] = {
-            pesan: []
-        };
-        conn.btch[m.sender].timeout = setTimeout(() => {
-            delete conn.btch[m.sender];
-        }, 300000);
+const handler = async (m, { conn, usedPrefix, command, text }) => {
+    if (!text) 
+        throw `Apa yang pengen kamu tanyain?\n\nContoh: ${usedPrefix + command} halo`;
 
-        m.reply(`Halo \`${m.name}\`👋, Saya siap membantu anda!`);
-    } else {
-        clearTimeout(conn.btch[m.sender].timeout);
-        conn.btch[m.sender].timeout = setTimeout(() => {
-            delete conn.btch[m.sender];
-        }, 300000);
-    }
-
-    const previousMessages = conn.btch[m.sender].pesan;
-  
-  
-  /**
- * @description Ubah prompt ini sesuai dengan keinginanmu.
- * @note Usahakan memberikan logika yang masuk akal dan mudah dipahami!
- */
-
-    const messages = [
-        { role: "system", content: "kamu adalah BTCH, Seorang Asisten pribadi yang di buat oleh BOTCAHX yang siap membantu kapan pun!" },
-        { role: "assistant", content: `Saya BTCH, asisten pribadi yang siap membantu kamu kapan pun! Apa yang bisa saya bantu hari ini?` },
-        ...previousMessages.map((msg, i) => ({ role: i % 2 === 0 ? 'user' : 'assistant', content: msg })),
-        { role: "user", content: text }
-    ];
     try {
-        const chat = async function(message) {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    const params = {
-                        message: message,
-                        apikey: btc
-                    };
-                    const { data } = await axios.post('https://api.botcahx.eu.org/api/search/openai-custom', params);
-                    resolve(data);
-                } catch (error) {
-                    reject(error);
-                }
-            });
-        };
+        let d = new Date(); // Ambil waktu sekarang
+        let locale = 'id'; // Lokasi di Indonesia
+        const jam = d.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }); // Sesuaikan jam dengan zona waktu Jakarta
+        let hari = d.toLocaleDateString(locale, { weekday: 'long' }); // Ambil hari
+        let tgl = d.toLocaleDateString(locale, {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        }); // Format tanggal
 
-        let res = await chat(messages);
-        if (res && res.result) {
-            await m.reply(res.result);
-            conn.btch[m.sender].pesan = [
-                ...conn.btch[m.sender].pesan,
-                text,
-                res.result
-            ];
-        } else {
-            throw "Kesalahan dalam mengambil data";
-        }
+        let logic = `Nama kamu adalah botzz diciptakan si o, kamu dibuat dan dikembangkan oleh OpenAI. Pakailah bahasa gaul, seperti kata gue dan lu dalam menjawab semua pertanyaan. Kamu cerdas dalam menangani masalah apapun. Selalu gunakan emoji yang sesuai dalam setiap kalimat. Gunakan tanggal ${tgl}. Gunakan jam ${jam}. Gunakan hari ${hari}.`; // Logika yang dipake
+
+        let json = await openai(text, logic); // Panggil fungsi openai
+
+        // Kirim pesan sesuai format yang diinginkan
+        await conn.sendMessage(m.chat, {
+            text: json, // Hasil dari AI
+            contextInfo: {
+                externalAdReply: {
+                    title: '✨ ChatGPT4',
+                    thumbnailUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUgq45nsxxSRPEUMhX3Bgzctxv7VT-ieYmdw&usqp=CAU', // URL gambar
+                    mediaType: 1,
+                    renderLargerThumbnail: true
+                }
+            }
+        }, { quoted: m }); // Mengutip pesan dari user
+        
     } catch (e) {
-        throw eror
+        console.error(e); // Log error kalo ada
+        throw `Maaf, ada yang salah! Coba lagi nanti. 😅`; // Pesan error yang lebih informatif
     }
 };
 
-handler.command = handler.help = ['ai','openai','chatgpt'];
-handler.tags = ['tools'];
-handler.premium = false
+handler.help = ["gpt <teks>", "gpt4"];
+handler.tags = ["ai"];
+handler.command = /^(openai|ai)$/i;
 handler.limit = true;
-module.exports = handler;
+
+module.exports = handler; // Ekspor handler
+
+const openai = async (text, logic) => { // Fungsi openai
+    let response = await axios.post("https://chateverywhere.app/api/chat/", {
+        "model": {
+            "id": "gpt-4",
+            "name": "GPT-4",
+            "maxLength": 32000,  // Sesuaikan token limit
+            "tokenLimit": 8000,  // Token limit untuk model GPT-4
+            "completionTokenLimit": 5000,  // Sesuaikan jika perlu
+            "deploymentName": "gpt-4"
+        },
+        "messages": [
+            {
+                "pluginId": null,
+                "content": text, 
+                "role": "user"
+            }
+        ],
+        "prompt": logic, 
+        "temperature": 0.5
+    }, { 
+        headers: {
+            "Accept": "/*/",
+            "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+        }
+    });
+    
+    let result = response.data;
+    return result;
+};
