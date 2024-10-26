@@ -1,58 +1,140 @@
-let fetch = require('node-fetch');
-let uploadImage = require('../lib/uploadImage')
+let FormData = require("form-data");
+let Jimp = require("jimp");
 
-let handler = async (m, { conn, usedPrefix, command }) => {
-  try {
-    const q = m.quoted ? m.quoted : m;
-    const mime = (q.msg || q).mimetype || q.mediaType || '';
-    if (/^image/.test(mime) && !/webp/.test(mime)) {
-      const img = await q.download();
-      const out = await uploadImage(img);
-      m.reply(wait);
-      if (command === 'hd') {
-        const api = await fetch(`https://api.botcahx.eu.org/api/tools/remini?url=${out}&apikey=${btc}`);
-        const image = await api.json();
-        const { url } = image;
-        conn.sendFile(m.chat, url, null, wm, m);
-      } else if (command === 'hd2') {       
-        try {
-          const api = await fetch(`https://api.botcahx.eu.org/api/tools/remini-v2?url=${out}&apikey=${btc}`);
-          const response = await api.text();
-          let image;
-          try {
-            image = JSON.parse(response);
-          } catch (error) {
-            console.error(`parse: ${error}`);
-            return;
-          }
-          const { url } = image;
-          conn.sendFile(m.chat, url, null, wm, m);
-        } catch (error) {
-          throw error;
-        }
-      } else if (command === 'hd3') {
-        const api = await fetch(`https://api.botcahx.eu.org/api/tools/remini-v3?url=${out}&resolusi=4&apikey=${btc}`);
-        const image = await api.json();
-        const url = image.url;
-        conn.sendFile(m.chat, url, null, wm, m);
-       } else if (command === 'removebg' || command === 'nobg') {
-        const api = await fetch(`https://api.botcahx.eu.org/api/tools/removebg?url=${out}&apikey=${btc}`);
-        const image = await api.json();
-        const url = image.url.result;
-        conn.sendFile(m.chat, url, null, wm, m);
-      }
-    } else {
-      m.reply(`Kirim gambar dengan caption *${usedPrefix + command}* atau tag gambar yang sudah dikirim.`);
-    }
-  } catch (e) {
-    console.error(e);
-    throw `🚩 *Server Error*`
-  }
+async function processing(urlPath, method) {
+	return new Promise(async (resolve, reject) => {
+		let Methods = ["enhance", "recolor", "dehaze"];
+		Methods.includes(method) ? (method = method) : (method = Methods[0]);
+		let buffer,
+			Form = new FormData(),
+			scheme = "https" + "://" + "inferenceengine" + ".vyro" + ".ai/" + method;
+		Form.append("model_version", 1, {
+			"Content-Transfer-Encoding": "binary",
+			contentType: "multipart/form-data; charset=uttf-8",
+		});
+		Form.append("image", Buffer.from(urlPath), {
+			filename: "enhance_image_body.jpg",
+			contentType: "image/jpeg",
+		});
+		Form.submit(
+			{
+				url: scheme,
+				host: "inferenceengine" + ".vyro" + ".ai",
+				path: "/" + method,
+				protocol: "https:",
+				headers: {
+					"User-Agent": "okhttp/4.9.3",
+					Connection: "Keep-Alive",
+					"Accept-Encoding": "gzip",
+				},
+			},
+			function (err, res) {
+				if (err) reject();
+				let data = [];
+				res
+					.on("data", function (chunk, resp) {
+						data.push(chunk);
+					})
+					.on("end", () => {
+						resolve(Buffer.concat(data));
+					});
+				res.on("error", (e) => {
+					reject();
+				});
+			}
+		);
+	});
 }
-
-handler.command = handler.help = ['hd', 'hd2', 'hd3','removebg','nobg'];
-handler.tags = ['tools'];
+let handler = async (m, { conn, usedPrefix, command }) => {
+	switch (command) {
+		case "enhancer":
+		case "unblur":
+		case "enhance":
+		case "hdr":
+		case "hd":
+			{
+				conn.enhancer = conn.enhancer ? conn.enhancer : {};
+				if (m.sender in conn.enhancer)
+					return conn.reply(m.chat, "Masih Ada Proses Yang Belum Selesai Kak, Silahkan Tunggu Sampai Selesai Yah >//<", m);
+				let q = m.quoted ? m.quoted : m;
+				let mime = (q.msg || q).mimetype || q.mediaType || "";
+				if (!mime)
+					return conn.reply(m.chat, `Send/Reply Images with the caption *.hd*`, m);
+				if (!/image\/(jpe?g|png)/.test(mime))
+					return conn.reply(m.chat, `Mime ${mime} tidak support`, m);
+				else conn.enhancer[m.sender] = true;
+				conn.sendMessage(m.chat, {
+					react: {
+						text: '⏳',
+						key: m.key,
+					}
+				});
+				let img = await q.download?.();
+				let error;
+				try {
+					const This = await processing(img, "enhance");
+					conn.chatRead(m.chat);
+					conn.sendMessage(m.chat, {
+						react: {
+							text: '✅',
+							key: m.key,
+						}
+					});
+					conn.sendFile(m.chat, This, "", "```Success...```", m);
+				} catch (er) {
+					error = true;
+				} finally {
+					if (error) {
+						conn.reply(m.chat, "Proses Gagal :(", m);
+					}
+					delete conn.enhancer[m.sender];
+				}
+			}
+			break;
+		case "colorize":
+		case "colorizer":
+			{
+				conn.recolor = conn.recolor ? conn.recolor : {};
+				if (m.sender in conn.recolor)
+					return conn.reply(m.chat, "Masih Ada Proses Yang Belum Selesai Kak, Silahkan Tunggu Sampai Selesai Yah >//<", m);
+				let q = m.quoted ? m.quoted : m;
+				let mime = (q.msg || q).mimetype || q.mediaType || "";
+				if (!mime)
+					return conn.reply(m.chat, `Fotonya Mana Kak?`, m);
+				if (!/image\/(jpe?g|png)/.test(mime))
+					return conn.reply(m.chat, `Mime ${mime} tidak support`, m);
+				else conn.recolor[m.sender] = true;
+				conn.sendMessage(m.chat, {
+					react: {
+						text: '⏳',
+						key: m.key,
+					}
+				});
+				let img = await q.download?.();
+				let error;
+				try {
+					const This = await processing(img, "recolor");
+					conn.sendMessage(m.chat, {
+						react: {
+							text: '✅',
+							key: m.key,
+						}
+					});
+					conn.sendFile(m.chat, This, "", "```Success...```", m);
+				} catch (er) {
+					error = true;
+				} finally {
+					if (error) {
+						conn.reply(m.chat, "Proses Gagal :(", m);
+					}
+					delete conn.recolor[m.sender];
+				}
+			}
+			break;
+	}
+};
+handler.help = ["enhancer", "hdr", "colorize", "hd", "unblur", "remini", "enhance"].map(v => v + ' *<image>*');
+handler.tags = ["tools", "hd"];
 handler.premium = false;
-handler.limit = true;
-
+handler.command = ["unblur", "enhancer", "enhance", "hdr", "colorize", "remini", "hd"];
 module.exports = handler;
