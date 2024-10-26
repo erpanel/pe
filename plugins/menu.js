@@ -16,7 +16,7 @@ let path = require('path')
 let fetch = require('node-fetch')
 let moment = require('moment-timezone')
 let levelling = require('../lib/levelling')
-let arrayMenu = ['all', 'main', 'downloader', 'rpg', 'rpgG', 'sticker', 'advanced', 'xp', 'fun', 'game', 'github', 'group', 'image', 'nsfw', 'info', 'internet', 'islam', 'kerang', 'maker', 'owner', 'voice', 'quotes', 'stalk', 'shortlink', 'tools', 'anonymous', ''];
+const arrayMenu = ['all', 'main', 'downloader', 'rpg', 'rpgG', 'sticker', 'advanced', 'xp', 'fun', 'game', 'github', 'group', 'image', 'nsfw', 'info', 'internet', 'islam', 'kerang', 'maker', 'owner', 'voice', 'quotes', 'stalk', 'shortlink', 'tools', 'anonymous', ''];
 
 
 const allTags = {
@@ -125,7 +125,7 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
             let text = menuList.replace(new RegExp(`%(${Object.keys(replace).sort((a, b) => b.length - a.length).join`|`})`, 'g'), 
                 (_, name) => '' + replace[name])
 
-            await conn.relayMessage(m.chat, {
+            await await conn.relayMessage(m.chat, {
             extendedTextMessage:{
                 text: text, 
                 contextInfo: {
@@ -135,8 +135,8 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
                         mediaType: 1,
                         previewType: 0,
                         renderLargerThumbnail: true,
-                        thumbnailUrl: 'https://telegra.ph/file/3a34bfa58714bdef500d9.jpg',
-                        sourceUrl: 'https://whatsapp.com/channel/0029Va8ZH8fFXUuc69TGVw1q'
+                        thumbnailUrl: 'https://telegra.ph/file/5753b06a866bed1ec3e28.jpg',
+                        sourceUrl: 'https://chat.whatsapp.com/CZ5FCfAXnqN3gvtnizRZg4'
                     }
                 }, 
                 mentions: [m.sender]
@@ -198,7 +198,7 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
         let text = menuCategory.replace(new RegExp(`%(${Object.keys(replace).sort((a, b) => b.length - a.length).join`|`})`, 'g'), 
             (_, name) => '' + replace[name])
 
-        await conn.relayMessage(m.chat, {
+        await await conn.relayMessage(m.chat, {
             extendedTextMessage:{
                 text: text, 
                 contextInfo: {
@@ -208,8 +208,8 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
                         mediaType: 1,
                         previewType: 0,
                         renderLargerThumbnail: true,
-                        thumbnailUrl: 'https://telegra.ph/file/3a34bfa58714bdef500d9.jpg',
-                        sourceUrl: 'https://whatsapp.com/channel/0029Va8ZH8fFXUuc69TGVw1q'
+                        thumbnailUrl: 'https://telegra.ph/file/5753b06a866bed1ec3e28.jpg',
+                        sourceUrl: 'https://chat.whatsapp.com/CZ5FCfAXnqN3gvtnizRZg4'
                     }
                 }, 
                 mentions: [m.sender]
