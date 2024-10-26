@@ -1,30 +1,28 @@
-const fetch = require('node-fetch')
+let { igdl } = require('btch-downloader')
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
-    if (!args[0]) throw `*Contoh:* ${usedPrefix}${command} https://www.instagram.com/p/ByxKbUSnubS/?utm_source=ig_web_copy_link`
+    if (!args[0]) throw `Masukkan Link Instagram-nya, bro! 📥`
 
     try {
-        const api = await fetch(`https://api.botcahx.eu.org/api/dowloader/igdowloader?url=${args[0]}&apikey=${btc}`)
-        const res = await api.json()
+        let res = await igdl(args[0])
+        if (!res || res.length === 0) throw `Gak ada hasil, coba link yang lain! 🤔`
 
-        const limitnya = 3; // ini jumlah foto yang ingin di kirim ke user (default 3 foto)
-
-        for (let i = 0; i < Math.min(limitnya, res.result.length); i++) {
-            await sleep(3000)
-            conn.sendFile(m.chat, res.result[i].url, null, `*Instagram Downloader*`, m)
+        await conn.sendMessage(m.chat, { text: `Sedang mendownload... ⏳` }, { quoted: m })
+        
+        for (let i of res) {
+            await conn.sendFile(m.chat, i.url, 'instagram.mp4', 'Yuk, tonton videonya! 🎥', m)
+            await new Promise(resolve => setTimeout(resolve, 1500)) // Delay 1.5 detik
         }
-    } catch (e) {
-        throw `*Server Down!*`
+
+        await conn.sendMessage(m.chat, { text: `Semua video sudah dikirim! 🎉` }, { quoted: m })
+    } catch (error) {
+        throw `Oops! Terjadi kesalahan: ${error.message} ❌`
     }
 }
 
-handler.help = ['instagram'].map(v => v + ' <url>')
+handler.help = ['ig'].map(v => v + ' <url>')
 handler.tags = ['downloader']
-handler.command = /^(ig|instagram|igdl|instagramdl|igstroy)$/i
+handler.command = /^(ig(dl)?)$/i
 handler.limit = true
 
-module.exports = handler
-
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+module.exports = handler;
