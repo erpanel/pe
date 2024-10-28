@@ -3,7 +3,7 @@ let handler = async (m, { usedPrefix, command, conn, args }) => {
   if (!args[0]) throw `*🚩 Example:* ${usedPrefix}${command} Zhao Lusi`;
   m.reply(wait)
   try {
-    let response = await fetch(`https://api.botcahx.eu.org/api/search/pinterest?text1=${args[0]}&apikey=${btc}`);
+    let response = await fetch(`https://api.betabotz.eu.org/api/search/pinterest?text1=${args[0]}&apikey=${lann}`);
     let data = await response.json();   
     let old = new Date()
     let limit = Math.min(5, data.result.length);
