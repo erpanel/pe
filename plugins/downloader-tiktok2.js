@@ -19,9 +19,9 @@ let handler = async (m, { conn, text }) => {
   }
 };
 
-handler.help = ['tiktok3 <url>'];
+handler.help = ['tiktok2 <url>'];
 handler.tags = ['downloader'];
-handler.command = /^(tiktok3|tt3|tiktokdl3|tiktoknowm3)$/i;
+handler.command = /^(tiktok2|tt2|tiktokdl2|tiktoknowm2)$/i;
 handler.limit = false;
 handler.group = false;
 
