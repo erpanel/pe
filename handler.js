@@ -810,8 +810,8 @@ module.exports = {
                 if (!('isBannedTime' in chat)) chat.isBannedTime = false
                 if (!('mute' in chat)) chat.mute = false
                 if (!('listStr' in chat)) chat.listStr = {}
-                if (!('sWelcome' in chat)) chat.sWelcome = 'Selamat datang @user di group @subject utamakan baca desk ya \n@desc'
-                if (!('sBye' in chat)) chat.sBye = 'Selamat tinggal @user 👋'
+                if (!('sWelcome' in chat)) chat.sWelcome = 'Hai, @user!\nSelamat datang di grup @subject\n\n@desc'
+                if (!('sBye' in chat)) chat.sBye = 'Selamat tinggal @user!'
                 if (!('sPromote' in chat)) chat.sPromote = ''
                 if (!('sDemote' in chat)) chat.sDemote = ''
                 if (!('delete' in chat)) chat.delete = true
@@ -848,8 +848,8 @@ module.exports = {
                 isBannedTime: false,
                 mute: false,
                 listStr: {},
-                sWelcome: 'Selamat datang @user di group @subject utamakan baca desk ya \n@desc',
-                sBye: 'Selamat tinggal @user 👋',
+                sWelcome: 'Hai, @user!\nSelamat datang di grup @subject\n\n@desc',
+                sBye: 'Selamat tinggal @user!',
                 sPromote: '',
                 sDemote: '',
                 delete: false, 
@@ -1166,64 +1166,43 @@ module.exports = {
     },
 	
   async participantsUpdate({ id, participants, action }) {
-    if (opts['self']) return
-    if (global.isInit) return
-
-    let chat = global.db.data.chats[id] || {}
-    let text = ''
-    let groupMetadata = await this.groupMetadata(id) || (conn.chats[id] || {}).metadata
-
-    switch (action) {
+        if (opts['self']) return
+        // if (id in conn.chats) return // First login will spam
+        if (global.isInit) return
+        let chat = db.data.chats[id] || {}
+        let text = ''
+        switch (action) {
         case 'add':
         case 'remove':
 		case 'leave':
 		case 'invite':
 		case 'invite_v4':
-            if (chat.welcome) {
-                for (let user of participants) {
-                    let pp, ppgc;
-
-                    try {
-                        pp = await this.profilePictureUrl(user, 'image');
-                    } catch (e) {
-                        pp = 'https://telegra.ph/file/0615e1831e71cb13e3f50.png';
+                if (chat.welcome) {
+                    let groupMetadata = await this.groupMetadata(id) || (conn.chats[id] || {}).metadata
+                    for (let user of participants) {
+                        let pp = 'https://btch.pages.dev/file/70e8de9b1879568954f09.jpg'
+                        try {
+                             pp = await this.profilePictureUrl(user, 'image')
+                        } catch (e) {
+                        } finally {
+                        text = (action === 'add' ? (chat.sWelcome || this.welcome || conn.welcome || 'Welcome, @user!').replace('@subject', await this.getName(id)).replace('@desc', groupMetadata.desc ? groupMetadata.desc.toString() : '') :
+                         (chat.sBye || this.bye || conn.bye || 'Bye, @user!')).replace('@user', '@' + user.split('@')[0])
+                            this.sendMessage(id, {
+                            text: text,
+                            contextInfo: {
+			    mentionedJid: [user],
+                            externalAdReply: {  
+                            title: global.wm,
+                            body: '',
+                            thumbnailUrl: pp,
+                            sourceUrl: 'https://api.botcahx.eu.org',
+                            mediaType: 1,
+                            renderLargerThumbnail: true 
+                            }}}, { quoted: null })
+                        }
                     }
-
-                    try {
-                        ppgc = await this.profilePictureUrl(id, 'image');
-                    } catch (e) {
-                        ppgc = 'https://telegra.ph/file/0615e1831e71cb13e3f50.png';
-                    }
-
-                    text = (action === 'add' ? 
-                        (chat.sWelcome || this.welcome || conn.welcome || 'Welcome, @user!')
-                        .replace('@subject', await this.getName(id))
-                        .replace('@desc', groupMetadata.desc ? groupMetadata.desc.toString() : '') :
-                        (chat.sBye || this.bye || conn.bye || 'Bye, @user!'))
-                        .replace('@user', '@' + user.split('@')[0]);
-
-                    let wel = API('widipe', '/welcome', {
-                        pp: pp,
-                        name: await this.getName(user),
-                        bg: 'https://telegra.ph/file/c538a6f5b0649a7861174.png',
-                        gcname: await this.getName(id),
-                        ppgc: ppgc,
-                        member: groupMetadata.participants.length
-                    });
-
-                    let lea = API('widipe', '/goodbye', {
-                        pp: pp,
-                        name: await this.getName(user),
-                        bg: 'https://telegra.ph/file/c538a6f5b0649a7861174.png',
-                        gcname: await this.getName(id),
-                        ppgc: ppgc,
-                        member: groupMetadata.participants.length
-                    });
-
-                    await this.sendFile(id, action === 'add' ? wel : lea, 'pp.jpg', text, null, false, { mentions: [user] });
-                }
-            }
-            break;                    
+		}
+                break                    
             case 'promote':
                 text = (chat.sPromote || this.spromote || conn.spromote || '@user ```is now Admin```')
             case 'demote':
