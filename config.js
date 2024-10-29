@@ -20,7 +20,7 @@ global.btc = '4zoe6D2Z'
 //Daftar terlebih dahulu https://api.botcahx.eu.org
 
 //INI OPTIONAL BOLEH DI ISI BOLEH JUGA ENGGA//
-global.lann = 'guru'
+global.lann = 'btzydiskyha'
 //Daftar https://api.betabotz.eu.org 
 
 //jangan diganti!
